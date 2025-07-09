@@ -43,6 +43,79 @@ fun main() {
 
 fun pcStep(field: Array<Array<String>>) {
     //функция хода ПК
+    //создаем массив возможных победных линий
+    val preWin= arrayOf(
+        arrayOf("11","12","13"),
+        arrayOf("21","22","23"),
+        arrayOf("31","32","33"),
+        arrayOf("11","21","31"),
+        arrayOf("12","22","32"),
+        arrayOf("13","23","33"),
+        arrayOf("11","22","33"),
+        arrayOf("13","22","31")
+    )
+    //массив - копия для хранения индексов возможного хода
+    val preWinCopy = Array(8, { Array(3, {""})})
+    //заполняем этот массив тем, что есть на поле
+    for (i in preWin.indices) {
+        for (j in preWin[i].indices) {
+            preWinCopy[i][j] = preWin[i][j] //заполняем массив-копию индексами
+            //и копируем текущее состояние клетки поля в наш массив победных линий
+            preWin[i][j] = field[preWin[i][j].toInt() / 10 - 1][preWin[i][j].toInt() % 10 - 1]
+        }
+    }
+//    for (f in preWin) println(f.asList()) //тест для демонстрации
+    //теперь ищем такой подмассив, в котором есть два o и один пробел - для победного хода
+    for (i in preWin.indices) {
+        var countO = 0
+        var countSpace = 0
+        var indexSpace = "00"
+        for (j in preWin[i].indices) {
+            //считаем o
+            if (preWin[i][j] == "o") countO++
+            //считаем пробелы
+            if (preWin[i][j] == " ") {
+                countSpace++
+                //найденный пробел фиксируем для координат хода
+                indexSpace = preWinCopy[i][j]
+                println(indexSpace)
+            }
+        }
+        //если нашелся такой подмассив, где есть 2 х и 1 пробел, то делаем ход в этот пробел
+        //на первом месте победный ход
+        if (countO == 2 && countSpace == 1) {
+            field[indexSpace.toInt() / 10 - 1][indexSpace.toInt() % 10 - 1] = "o"
+            //если сделали ход, то нужно прекратить метод
+            return
+        }
+    }
+    //теперь ищем такой подмассив, в котором есть два х и один пробел - для предотвращения поражения
+    for (i in preWin.indices) {
+        var countX = 0
+        var countSpace = 0
+        var indexSpace = "00"
+        for (j in preWin[i].indices) {
+            //считаем х
+            if (preWin[i][j] == "x") countX++
+            //считаем пробелы
+            if (preWin[i][j] == " ") {
+                countSpace++
+                //найденный пробел фиксируем для координат хода
+                indexSpace = preWinCopy[i][j]
+                println(indexSpace)
+            }
+        }
+        //если нашелся такой подмассив, где есть 2 х и 1 пробел, то делаем ход в этот пробел
+        //на втором месте ход предотвращения поражения
+        if (countX == 2 && countSpace == 1) {
+            field[indexSpace.toInt() / 10 - 1][indexSpace.toInt() % 10 - 1] = "o"
+            //если сделали ход, то нужно прекратить метод
+            return
+        }
+    }
+
+
+    //если ход не было сделан для предотвращения победы пользователя, то ставим рандомно
     //создаем массив всех клеток
     val possibleSteps = Array(9, {" "})
     var count = 0
@@ -53,9 +126,11 @@ fun pcStep(field: Array<Array<String>>) {
             count++
         }
     }
+//    println(possibleSteps.asList()) //test
     //считаем количество свободных для хода клеток
     var countPossibleSteps = 0 // = possibleSteps.size - possibleSteps.count{ i -> i == " "}
     for (n in possibleSteps) if (n != " ") countPossibleSteps++
+//    println("countPossibleSteps = $countPossibleSteps") //test
     //создаем новый массив по количеству свободных ходов
     val freeSteps = Array(countPossibleSteps, {" "})
     var index = 0
@@ -66,6 +141,7 @@ fun pcStep(field: Array<Array<String>>) {
             index++
         }
     }
+//    println(freeSteps.asList()) //test
     //выбираем случайную клетку из свободных для хода ПК
     val pcStep = freeSteps[Random.nextInt(0, freeSteps.size)]
     field[pcStep.toInt() / 10 - 1][pcStep.toInt() % 10 - 1] = "o"
